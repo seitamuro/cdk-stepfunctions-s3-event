@@ -38,11 +38,11 @@ export class CdkStepFunctionsS3EventStack extends cdk.Stack {
       table: eventTable,
     });
 
-    const definition = putItemJob;
+    const definitionBody = sfn.DefinitionBody.fromChainable(putItemJob);
 
     const logGroup = new logs.LogGroup(this, "StateMachineLogGroup");
     const stateMachine = new sfn.StateMachine(this, "StateMachine", {
-      definition,
+      definitionBody,
       logs: {
         destination: logGroup,
         level: sfn.LogLevel.ALL,
