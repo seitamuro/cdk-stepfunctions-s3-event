@@ -19,12 +19,17 @@ export class CdkStepFunctionsS3EventStack extends cdk.Stack {
 
     const eventTable = new dynamodb.Table(this, "EventTable", {
       partitionKey: { name: "filePath", type: dynamodb.AttributeType.STRING },
+      sortKey: { name: "eventTime", type: dynamodb.AttributeType.STRING },
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
 
     const putItemJob = new tasks.DynamoPutItem(this, "PutItem", {
       item: {
         filePath: tasks.DynamoAttributeValue.fromString(
           sfn.JsonPath.stringAt("$.detail.object.key")
+        ),
+        eventTime: tasks.DynamoAttributeValue.fromString(
+          sfn.JsonPath.stringAt("$.time")
         ),
         event: tasks.DynamoAttributeValue.fromString(
           sfn.JsonPath.stringAt("States.JsonToString($)")
@@ -44,6 +49,7 @@ export class CdkStepFunctionsS3EventStack extends cdk.Stack {
         includeExecutionData: true,
       },
       timeout: cdk.Duration.minutes(5),
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
     eventTable.grantWriteData(stateMachine);
 
